@@ -21,20 +21,23 @@ import android.view.SurfaceView;
 import java.util.ArrayList;
 
 public class PlatformView extends SurfaceView implements Runnable {
-    private boolean debugging = true;
+    
+	private boolean debugging = false;
     private volatile boolean running;
     private Thread gameThread = null;
 
+	
     private Paint paint;
     private Canvas canvas;
     private SurfaceHolder ourHolder;
 
     Context context;
+
     long startFrameTime;
     long timeThisFrame;
     long fps;
 
-    // classes
+    // engine classes
     private LevelManager lm;
     private Viewport vp;
     InputController ic;
@@ -43,18 +46,21 @@ public class PlatformView extends SurfaceView implements Runnable {
 
     //constructor
     PlatformView(Context context, int screenWidth, int screenHeight){
-        super(context);
+        
+		super(context);
         this.context = context;
+
         ourHolder = getHolder();
         paint = new Paint();
 
         vp = new Viewport(screenWidth, screenHeight);
-
         sm = new SoundManager();
         sm.loadSound(context);
-
         ps = new PlayerState();
 
+        //loadLevel("LevelMountain", 118, 17);
+        //loadLevel("LevelForest", 1, 17);
+        //loadLevel("LevelCity", 118, 18);
         loadLevel("LevelCave",1,16);
     }
 
@@ -89,6 +95,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                         //collision! Now deal with different types
                         switch (go.getType()) {
                             case 'c':
+                                //coin
                                 sm.playSound("coin_pickup");
                                 go.setActive(false);
                                 go.setVisible(false);
@@ -102,6 +109,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 break;
 
                             case 'u':
+                                //gun upgrade
                                 sm.playSound("gun_upgrade");
                                 go.setActive(false);
                                 go.setVisible(false);
@@ -125,6 +133,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 break;
 
                             case 'd':
+                                //drone
                                 PointF location;
                                 sm.playSound("player_burn");
                                 ps.loseLife();
@@ -147,6 +156,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 break;
 
                             case 'f':
+                                //fire
                                 sm.playSound("player_burn");
                                 ps.loseLife();
                                 location = new PointF(ps.loadLocation().x, ps.loadLocation().y);
@@ -156,6 +166,7 @@ public class PlatformView extends SurfaceView implements Runnable {
                                 break;
 
                             case 't':
+                                //end of level
                                 Teleport teleport = (Teleport) go;
                                 Location t = teleport.getTarget();
                                 loadLevel(t.level,t.x,t.y);
@@ -175,6 +186,41 @@ public class PlatformView extends SurfaceView implements Runnable {
                         }
                     }
 
+                    //Check bullet collisions
+                    for (int i = 0; i < lm.player.bfg.getNumBullets(); i++) {
+                        //Make a hitbox out of the the current bullet
+                        RectHitbox r = new RectHitbox();
+                        r.setLeft(lm.player.bfg.getBulletX(i));
+                        r.setTop(lm.player.bfg.getBulletY(i));
+                        r.setRight(lm.player.bfg.getBulletX(i) + .1f);
+                        r.setBottom(lm.player.bfg.getBulletY(i) + .1f);
+
+                        if (go.getHitbox().intersects(r)) {
+                            // Collision detected
+                            // make bullet disappear until it
+                            // is respawned as a new bullet
+                            lm.player.bfg.hideBullet(i);
+
+                            //Now respond depending upon the type of object hit
+                            if (go.getType() != 'g' && go.getType() != 'd') {
+                                sm.playSound("ricochet");
+
+                            } else if (go.getType() == 'g') {
+                                // Knock the guard back
+                                go.setWorldLocationX(go.getWorldLocation().x +
+                                        2 * (lm.player.bfg.getDirection(i)));
+
+                                sm.playSound("hit_guard");
+
+                            } else if (go.getType() == 'd') {
+                                //destroy the droid
+                                sm.playSound("explode");
+                                //permanently clip this drone
+                                go.setWorldLocation(-100, -100, 0);
+                            }
+                        }
+                    }
+
                     if (lm.isPlaying()) {
                         go.update(fps, lm.gravity);
 
@@ -187,44 +233,11 @@ public class PlatformView extends SurfaceView implements Runnable {
                     go.setVisible(false);
                 }
             }
-            //Check bullet collisions
-            for (int i = 0; i < lm.player.bfg.getNumBullets(); i++) {
-                //Make a hitbox out of the the current bullet
-                RectHitbox r = new RectHitbox();
-                r.setLeft(lm.player.bfg.getBulletX(i));
-                r.setTop(lm.player.bfg.getBulletY(i));
-                r.setRight(lm.player.bfg.getBulletX(i) + .1f);
-                r.setBottom(lm.player.bfg.getBulletY(i) + .1f);
 
-                if (go.getHitbox().intersects(r)) {
-                    // Collision detected
-                    // make bullet disappear until it
-                    // is respawned as a new bullet
-                    lm.player.bfg.hideBullet(i);
-
-                    //Now respond depending upon the type of object hit
-                    if (go.getType() != 'g' && go.getType() != 'd') {
-                        sm.playSound("ricochet");
-
-                    } else if (go.getType() == 'g') {
-                        // Knock the guard back
-                        go.setWorldLocationX(go.getWorldLocation().x +
-                                2 * (lm.player.bfg.getDirection(i)));
-
-                        sm.playSound("hit_guard");
-
-                    } else if (go.getType() == 'd') {
-                        //destroy the droid
-                        sm.playSound("explode");
-                        //permanently clip this drone
-                        go.setWorldLocation(-100, -100, 0);
-                    }
-                }
-            }
         }
 
         if (lm.isPlaying()) {
-            //Reset the players location as the centre of the viewport
+            //Reset the players location as the center of the viewport
             vp.setWorldCenter(lm.gameObjects.get(lm.playerIndex)
                             .getWorldLocation().x,
                     lm.gameObjects.get(lm.playerIndex).getWorldLocation().y);
@@ -250,12 +263,16 @@ public class PlatformView extends SurfaceView implements Runnable {
 
     private void draw() {
         if(ourHolder.getSurface().isValid()){
+
             canvas = ourHolder.lockCanvas();
+
+            //removes last frame
             paint.setColor(Color.argb(255,0,0,255));
             canvas.drawColor(Color.argb(255,0,0,255));
 
             //drawing backgrounds;
             drawBackground(0,-3);
+
             //new drawing code goes here
             Rect toScreen2d = new Rect();
 
@@ -398,6 +415,7 @@ public class PlatformView extends SurfaceView implements Runnable {
             ourHolder.unlockCanvasAndPost(canvas);
         }
     }
+
     public void pause() {
         running = false;
         try {
@@ -415,12 +433,13 @@ public class PlatformView extends SurfaceView implements Runnable {
 
     public void loadLevel(String level, float px, float py){
         lm = null;
-        lm = new LevelManager(context,vp.getPixelsPerMeterX(),vp.getScreenWidth(), ic,level,px,py);
+        lm = new LevelManager(context,vp.getPixelsPerMeterX(),vp.getScreenWidth(),ic,level,px,py);
         ic = new InputController(vp.getScreenWidth(),vp.getScreenHeight());
 
         PointF location = new PointF(px,py);
         ps.saveLocation(location);
 
+        //maintains the same FireRate
         lm.player.bfg.setFireRate(ps.getFireRate());
 
         vp.setWorldCenter(lm.gameObjects.get(lm.playerIndex).getWorldLocation().x,

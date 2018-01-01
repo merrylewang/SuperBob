@@ -110,7 +110,7 @@ public class Player extends GameObject {
                 // it means the long jumps are less punishing
                 // because the player can take off just after the platform
                 // They will also be able to cheat by jumping in thin air
-                isFalling = true;
+                //isFalling = true;
         }
 
         //update gun

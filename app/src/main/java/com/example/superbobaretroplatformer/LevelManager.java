@@ -35,11 +35,11 @@ public class LevelManager {
             case "LevelCave":
                 levelData = new LevelCave();
                 break;
-            case "LeveLCity":
+            case "LevelCity":
                 levelData = new LevelCity();
                 break;
 
-            case "LeveLForest":
+            case "LevelForest":
                 levelData = new LevelForest();
                 break;
 

@@ -8,8 +8,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
+//monitors animation for moving gameObjects
 public class Animation {
-    //Variables
     Bitmap bitmapSheet;
     String bitmapName;
     private Rect sourceRect;
@@ -21,7 +21,6 @@ public class Animation {
     private int frameHeight;
     int pixelsPerMeter;
 
-    //Constructor
     Animation(Context context, String bitmapName, float frameHeight,
               float frameWidth, int animFps, int frameCount, int pixelsPerMeter)
     {
@@ -30,7 +29,6 @@ public class Animation {
         this.frameWidth = (int)frameWidth * pixelsPerMeter;
         this.frameHeight = (int)frameHeight * pixelsPerMeter;
         sourceRect = new Rect(0,0,this.frameWidth,this.frameHeight);
-
         framePeriod = 1000 / animFps;
         frameTicker = 01;
         this.bitmapName = "" + bitmapName;
