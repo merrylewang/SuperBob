@@ -37,7 +37,7 @@ public class LevelMountain extends LevelData{
 
         // Declare the values for the teleports in order of appearance
         locations = new ArrayList<Location>();
-        this.locations.add(new Location("LevelCave", 1f, 16f));
+        this.locations.add(new Location("LevelCave2", 10f, 16f));
 
         backgroundDataList = new ArrayList<BackgroundData>();
         this.backgroundDataList.add(new BackgroundData("mountain", true, -2, -5, 6, 4, 11 ));

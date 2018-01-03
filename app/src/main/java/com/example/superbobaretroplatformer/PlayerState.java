@@ -14,7 +14,7 @@ public class PlayerState {
     private float restartY;
 
     PlayerState() {
-        lives = 3;
+        lives = 1000000;
         mgFireRate = 1;
         numCredits = 0;
     }

@@ -38,14 +38,25 @@ public class LevelManager {
             case "LevelCity":
                 levelData = new LevelCity();
                 break;
-
             case "LevelForest":
                 levelData = new LevelForest();
                 break;
-
             case "LevelMountain":
                 levelData = new LevelMountain();
                 break;
+            case "LevelCity2":
+                levelData = new LevelCity2();
+                break;
+            case "LevelCave2":
+                levelData = new LevelCave2();
+                break;
+            case "LevelForest2":
+                levelData = new LevelForest2();
+                break;
+            case "LevelMountain2":
+                levelData = new LevelMountain2();
+                break;
+
         }
 
         gameObjects = new ArrayList<>();
@@ -355,9 +366,9 @@ public class LevelManager {
                             gameObjects.add(new Grass(j,i,c));
                             break;
                         case 'p':
-                            gameObjects.add(new Player(context, px, py,pixelsPerMeter));
+                            player = new Player(context, px, py,pixelsPerMeter);
+                            gameObjects.add(player);
                             playerIndex = currentIndex;
-                            player = (Player) gameObjects.get(playerIndex);
                             break;
                         case 'c':
                             gameObjects.add(new Coin(j,i,c));
@@ -450,12 +461,15 @@ public class LevelManager {
                     if (bitmapsArray[getBitmapIndex(c)] == null) {
 
                         // Prepare it now and put it in the bitmapsArrayList
-                        bitmapsArray[getBitmapIndex(c)] =
-                                gameObjects.get(currentIndex).
-                                        prepareBitmap(context,
-                                                gameObjects.get(currentIndex).
-                                                        getBitmapName(),
-                                                pixelsPerMeter);
+                        if (currentIndex < gameObjects.size()){
+                            bitmapsArray[getBitmapIndex(c)] =
+                                    gameObjects.get(currentIndex).
+                                            prepareBitmap(context,
+                                                    gameObjects.get(currentIndex).
+                                                            getBitmapName(),
+                                                    pixelsPerMeter);
+                        }
+                        else {}
                     }
                 }
             }
